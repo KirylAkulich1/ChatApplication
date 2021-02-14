@@ -4,19 +4,24 @@ namespace ChatApplication
 {
     public class ChatClient : IChatClient
     {
-        private IConnectionStrategy _connectionStrategy;
+        private ICommunicaionStrategy _connectionStrategy;
         private IChatIO _chatIO;
         public string Name { get; set; }
-        
-        public ChatClient(string name,IChatIO chatIO)
+        public string FriendName { get; set; }
+
+        public ChatClient()
         {
-            _connectionStrategy = Container.FistConnectionSt;
-            _chatIO = chatIO;
-            Name = name;
+            _chatIO = Container.ChatIO;
+            _chatIO.OnUserInput += OnUserInput;
         }
-        public void ChangeStrategy(IConnectionStrategy newStrtegy)
+        public void ChangeStrategy(ICommunicaionStrategy newStrtegy)
         {
             _connectionStrategy = newStrtegy;
+        }
+
+        private void OnUserInput(object sender, string message)
+        {
+            _connectionStrategy.Process(message);
         }
         
     }

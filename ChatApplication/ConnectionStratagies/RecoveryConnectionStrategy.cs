@@ -1,6 +1,6 @@
 namespace ChatApplication.ConnectionStratagies
 {
-    public class RecoveryConnectionStrategy : IConnectionStrategy
+    public class RecoveryConnectionStrategy 
     {
         private IChatClient _chatClient;
         public RecoveryConnectionStrategy(IChatClient client)

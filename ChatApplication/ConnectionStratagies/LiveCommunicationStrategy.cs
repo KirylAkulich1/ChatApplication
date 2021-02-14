@@ -1,45 +1,71 @@
 using System;
+using System.Runtime.CompilerServices;
+using System.Text;
 using ChatApplication.ConnectivityService;
+using ChatApplication.Handlers;
+using ChatApplication.Messages;
+using ChatApplication.MessageService;
 
 namespace ChatApplication.ConnectionStratagies
 {
-    public class LiveCommunicationStrategy : IConnectionStrategy
+    public class LiveCommunicationStrategy : ICommunicaionStrategy
     {
         private IChatClient _client;
-        private IChatIO _chatIO;
-        private ConnectivityService.ConnectivityService _service = ConnectionBuilder.GetInstance();
+        private IChatIO _chatIo;
+        private IMessageService _messageService;
+        private IConnectivityService _connectivityService;
         public LiveCommunicationStrategy(IChatClient client)
         {
             _client = client;
+            _messageService = Container.MessageServ;
+            _connectivityService = Container.ConnServ;
         }
         
-        private void  RecieveMessages()
+        public void Process(string content)
         {
-            try
-            {
-                while (true)
-                {
-                    
-                }
-            }
-            catch (Exception ex)
-            {
-                _chatIO.Write(ChatConstants.ErrorMessage);
-            }
-            finally
-            {
-                _chatIO.Write(ChatConstants.ByeMessage);
-            }
-         
-        }
-        public void Connect()
-        {
-            
+            _client.Name = content;
+            _messageService.SaveMessage(_client.Name,content);
+            Message greetMessage = new Message { Type = MessageType.Chat,Content = content};
+            _connectivityService.Send(greetMessage.ToJson().ToByteArray());
         }
 
-        public void Send(string message)
+        public void StarategyEstablished()
         {
-            
+            _connectivityService.onMessageRecieved += OnMessageRecieved;
+            _chatIo.GetNextMessage();
         }
+        private void OnMessageRecieved(object sender, byte[] bytes)
+        {
+            string message = Encoding.Unicode.GetString(bytes);
+            Handler handler = new Handler();
+            handler.ExecuteOnError((Exception e) =>
+            {
+                _chatIo.Write(ChatConstants.ParseError);
+                Message error = new Message {Type = MessageType.Error, Content = e.Message};
+                _connectivityService.Send(error.ToJson().ToByteArray());
+            }).Execute(()=>{
+                Message recieved=message.ToMessage();
+                switch (recieved.Type)
+                {
+                    case MessageType.Chat:
+                        if (recieved.Content.MD5Hash() == recieved.ContentHash)
+                        {
+                            Message errorMessage = new Message {Type = MessageType.Error, Content = "Hash error"};
+                            _connectivityService.Send(errorMessage.ToJson().ToByteArray());
+                        }
+                        _messageService.SaveMessage(_client.FriendName,recieved.Content);
+                        break;
+                    case  MessageType.Error:
+                        _chatIo.Write(ChatConstants.RecieveError);
+                        break;
+                    case MessageType.FirstMessage:
+                        Message recoverMessage = new Message {Type = MessageType.RecoveryMessage, Content = "Recover"};
+                        _connectivityService.Send(recoverMessage.ToJson().ToByteArray());
+                        _chatIo.Write(ChatConstants.FriendReturned);
+                        break;
+                }
+            });
+        }
+        
     }
 }

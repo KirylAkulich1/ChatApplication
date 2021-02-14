@@ -41,14 +41,15 @@ namespace ChatApplication
         static void Main(string[] args)
         {
             ConfigureChat("127.0.0.1", 4444,5555);
+            Container.ChatIO.Write(ChatConstants.GreetingMessage);
+            Container.ChatIO.GetNextMessage();
             Container.ChatIO.Write(ChatConstants.WaitMessage);
-            Container.ConnServ.Connect();
+            Console.WriteLine("Buy fucking chat");
         }
         private static  void ConfigureChat(string hostname,int remotePort,int localPort)
         {
-            string userName = Container.ChatIO.GetUserName();
             Container.ConfigureServices(hostname,remotePort,localPort);
-            Container.ConfigureClient(userName);
+            Container.ConfigureClient();
             Container.ConfigureStorage(hostname,remotePort);
             
         }

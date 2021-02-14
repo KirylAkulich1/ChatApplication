@@ -11,7 +11,7 @@ namespace ChatApplication.MessageService
             
         }
 
-        public string Read()
+        public string[] Read()
         {
             return null;
         }

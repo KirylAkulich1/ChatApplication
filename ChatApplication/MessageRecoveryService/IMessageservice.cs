@@ -2,7 +2,7 @@ namespace ChatApplication.MessageService
 {
     public interface IMessageService
     {
-        void SaveMessage();
-        void ResoreHistory();
+        void SaveMessage(string author,string content);
+        string[] ResoreHistory();
     }
 }

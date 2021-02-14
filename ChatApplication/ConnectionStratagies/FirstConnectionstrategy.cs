@@ -1,42 +1,76 @@
+using System;
 using System.Text;
+using System.Threading;
 using ChatApplication.ConnectivityService;
+using ChatApplication.Handlers;
+using ChatApplication.Messages;
+using ChatApplication.MessageService;
 
 namespace ChatApplication.ConnectionStratagies
 {
-    public class FirstConnectionStrategy : IConnectionStrategy
+    public class FirstConnectionStrategy : ICommunicaionStrategy
     {
         private IConnectivityService _connectivityService;
-        private ConnectionMonitor _connectionMonitor;
         private IChatClient _client;
+        private IChatIO _chatIo;
+        private bool _answerRecieved;
+        private IMessageService _messageService;
         public FirstConnectionStrategy(IChatClient client)
         {
             _client = client;
             _connectivityService = Container.ConnServ;
-            _connectionMonitor = Container.ConnMonitor;
-            _connectionMonitor.onConnectivityChanged += ConnectivityChanged;
-        }
-
-        public void Connect()
-        {
+            _chatIo = Container.ChatIO;
             
         }
 
-        public void Send(string message)
+        public void Process(string content)
         {
-            _connectivityService.Send( Encoding.UTF8.GetBytes(message));
+            _client.Name = content;
+            Message greetMessage = new Message { Type = MessageType.FirstMessage,Content = content};
+            _connectivityService.Send(greetMessage.ToJson().ToByteArray());
+            while (!_answerRecieved)
+            {
+                Thread.Sleep(ChatConstants.RetryDelay);
+            }
+            _connectivityService.onMessageRecieved -= OnMessageecieved;
         }
 
-        public void ConnectivityChanged(object sender, ConnectionState currentState)
+        public void StarategyEstablished()
         {
-            switch (currentState)
+            _connectivityService.onMessageRecieved += OnMessageecieved;
+        }
+
+        public void  OnMessageecieved(object sender, byte[] bytes)
+        {
+            string message = Encoding.Unicode.GetString(bytes);
+            _answerRecieved = true;
+            Handler handler = new Handler();
+            handler.ExecuteOnError((Exception e) =>
             {
-                case ConnectionState.Disconnected:
-                    _client.ChangeStrategy(Container.RecoveryconnectionSt);
-                    break;
-                case ConnectionState.Connected:
-                    Send(_client.Name);
-                    break;
-            }
+                Message error = new Message {Type = MessageType.Error, Content = e.Message};
+                _connectivityService.Send(error.ToJson().ToByteArray());
+            }).Execute(()=>{
+            Message recieved=message.ToMessage();
+                switch (recieved.Type)
+                {
+                    case MessageType.Success:
+                        _client.ChangeStrategy(Container.LiveConnectionSt);
+                        _chatIo.Write(ChatConstants.ConnectionEstablished);
+                        break;
+                    case MessageType.RecoveryMessage:
+                        foreach (var message  in _messageService.ResoreHistory())
+                        {
+                            _chatIo.Write(message);
+                        }
+
+                        break;
+                    case  MessageType.Error:
+                        Message greetMessage=new Message { Type = MessageType.FirstMessage,Content =_client.Name};
+                        _connectivityService.Send(greetMessage.ToJson().ToByteArray());
+                        break;
+                }
+            });
+
         }
     }
 }

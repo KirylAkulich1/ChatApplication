@@ -1,10 +1,14 @@
+using System;
+
 namespace ChatApplication
 {
     public interface IChatIO
     {
+        event EventHandler<String> OnUserInput;
         void Write(string message);
-        string Read();
+
+        void GetNextMessage();
         string GetUserName();
-        string GeetUser();
+        
     }
 }

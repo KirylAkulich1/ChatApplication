@@ -4,9 +4,17 @@ namespace ChatApplication
 {
     public class ConsoleChatIO : IChatIO
     {
+        public event EventHandler<string> OnUserInput;
+
         public void Write(string message)
         {
             Console.WriteLine(message);
+        }
+
+        public void GetNextMessage()
+        {
+            string message = Console.ReadLine();
+            OnUserInput?.Invoke(this,message);
         }
 
         public string Read()

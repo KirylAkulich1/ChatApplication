@@ -12,9 +12,14 @@ namespace ChatApplication.MessageService
             
         }
 
-        public void ResoreHistory()
+        public void SaveMessage(string author, string content)
         {
-          
+            _messageStorage.Save($@"{author} : {content}");
+        }
+
+        public string[] ResoreHistory()
+        {
+            return _messageStorage.Read();
         }
     }
 }
