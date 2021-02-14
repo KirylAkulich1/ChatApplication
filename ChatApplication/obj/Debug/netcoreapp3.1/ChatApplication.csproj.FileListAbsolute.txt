@@ -1,0 +1,13 @@
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/bin/Debug/netcoreapp3.1/ChatApplication
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/bin/Debug/netcoreapp3.1/ChatApplication.deps.json
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/bin/Debug/netcoreapp3.1/ChatApplication.runtimeconfig.json
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/bin/Debug/netcoreapp3.1/ChatApplication.runtimeconfig.dev.json
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/bin/Debug/netcoreapp3.1/ChatApplication.dll
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/bin/Debug/netcoreapp3.1/ChatApplication.pdb
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.csprojAssemblyReference.cache
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.AssemblyInfoInputs.cache
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.AssemblyInfo.cs
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.csproj.CoreCompileInputs.cache
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.dll
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.pdb
+/home/kiryl/RiderProjects/ChatApplication/ChatApplication/obj/Debug/netcoreapp3.1/ChatApplication.genruntimeconfig.cache
