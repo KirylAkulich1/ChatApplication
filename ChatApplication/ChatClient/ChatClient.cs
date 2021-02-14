@@ -17,6 +17,7 @@ namespace ChatApplication
         public void ChangeStrategy(ICommunicaionStrategy newStrtegy)
         {
             _connectionStrategy = newStrtegy;
+            _connectionStrategy.StarategyEstablished();
         }
 
         private void OnUserInput(object sender, string message)

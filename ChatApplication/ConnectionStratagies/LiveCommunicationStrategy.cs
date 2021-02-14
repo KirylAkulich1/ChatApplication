@@ -19,6 +19,7 @@ namespace ChatApplication.ConnectionStratagies
             _client = client;
             _messageService = Container.MessageServ;
             _connectivityService = Container.ConnServ;
+            _chatIo = Container.ChatIO;
         }
         
         public void Process(string content)
@@ -54,10 +55,13 @@ namespace ChatApplication.ConnectionStratagies
                             _connectivityService.Send(errorMessage.ToJson().ToByteArray());
                         }
                         _messageService.SaveMessage(_client.FriendName,recieved.Content);
+                        _chatIo.Write($@"{_client.FriendName} : {recieved.Content}");
                         break;
+                    
                     case  MessageType.Error:
                         _chatIo.Write(ChatConstants.RecieveError);
                         break;
+                    
                     case MessageType.FirstMessage:
                         Message recoverMessage = new Message {Type = MessageType.RecoveryMessage, Content = "Recover"};
                         _connectivityService.Send(recoverMessage.ToJson().ToByteArray());

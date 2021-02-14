@@ -43,7 +43,7 @@ namespace ChatApplication.ConnectionStratagies
         public void  OnMessageecieved(object sender, byte[] bytes)
         {
             string message = Encoding.Unicode.GetString(bytes);
-            _answerRecieved = true;
+            Container.Logger.Log(message);
             Handler handler = new Handler();
             handler.ExecuteOnError((Exception e) =>
             {
@@ -53,16 +53,20 @@ namespace ChatApplication.ConnectionStratagies
             Message recieved=message.ToMessage();
                 switch (recieved.Type)
                 {
+                    case MessageType.FirstMessage:
+                        Message successMessage = new Message {Type = MessageType.Success, Content = "Success"};
+                        _connectivityService.Send(successMessage.ToJson().ToByteArray());
+                        break;
                     case MessageType.Success:
-                        _client.ChangeStrategy(Container.LiveConnectionSt);
+                        _answerRecieved = true;
                         _chatIo.Write(ChatConstants.ConnectionEstablished);
+                        _client.ChangeStrategy(Container.LiveConnectionSt);
                         break;
                     case MessageType.RecoveryMessage:
                         foreach (var message  in _messageService.ResoreHistory())
                         {
                             _chatIo.Write(message);
                         }
-
                         break;
                     case  MessageType.Error:
                         Message greetMessage=new Message { Type = MessageType.FirstMessage,Content =_client.Name};

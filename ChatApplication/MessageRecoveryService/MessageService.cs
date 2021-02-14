@@ -1,3 +1,5 @@
+using System;
+
 namespace ChatApplication.MessageService
 {
     public class MessageService : IMessageService
@@ -14,7 +16,7 @@ namespace ChatApplication.MessageService
 
         public void SaveMessage(string author, string content)
         {
-            _messageStorage.Save($@"{author} : {content}");
+            Console.WriteLine($@"{author} : {content}");
         }
 
         public string[] ResoreHistory()
