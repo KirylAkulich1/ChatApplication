@@ -8,12 +8,12 @@ namespace ChatApplication.Handlers
     {
         public void Execute(Action action)
         {
-            while (!Run(action))
+            while (!Retry(action))
             {
                 Thread.Sleep(ChatConstants.RetryDelay);
             }
         }
-        public bool Run(Action action)
+        private bool Retry(Action action)
         {
             bool success = true;
             try

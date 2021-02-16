@@ -14,25 +14,32 @@ namespace ChatApplication.ConnectionStratagies
         private IChatClient _client;
         private IChatIO _chatIo;
         private bool _answerRecieved;
+        private bool _otherClientNameRecieved;
         private IMessageService _messageService;
         public FirstConnectionStrategy(IChatClient client)
         {
             _client = client;
             _connectivityService = Container.ConnServ;
             _chatIo = Container.ChatIO;
-            
+            _messageService = Container.MessageServ;
         }
 
         public void Process(string content)
         {
             _client.Name = content;
             Message greetMessage = new Message { Type = MessageType.FirstMessage,Content = content};
-            _connectivityService.Send(greetMessage.ToJson().ToByteArray());
-            while (!_answerRecieved)
-            {
-                Thread.Sleep(ChatConstants.RetryDelay);
-            }
+            
+            this.Wait().
+                Until(()=>_answerRecieved).
+                Repeat(()=>_connectivityService.Send(greetMessage.ToJson().ToByteArray()));
+           
+            this.Wait().
+                Until(()=>_otherClientNameRecieved).
+                Start();
+            
             _connectivityService.onMessageRecieved -= OnMessageecieved;
+            _chatIo.Write("Connection Established.Start dialog");
+            _client.ChangeStrategy(Container.LiveConnectionSt);
         }
 
         public void StarategyEstablished()
@@ -43,7 +50,6 @@ namespace ChatApplication.ConnectionStratagies
         public void  OnMessageecieved(object sender, byte[] bytes)
         {
             string message = Encoding.Unicode.GetString(bytes);
-            Container.Logger.Log(message);
             Handler handler = new Handler();
             handler.ExecuteOnError((Exception e) =>
             {
@@ -54,20 +60,27 @@ namespace ChatApplication.ConnectionStratagies
                 switch (recieved.Type)
                 {
                     case MessageType.FirstMessage:
+                        _client.FriendName = recieved.Content;
                         Message successMessage = new Message {Type = MessageType.Success, Content = "Success"};
                         _connectivityService.Send(successMessage.ToJson().ToByteArray());
+                        _otherClientNameRecieved = true;
                         break;
+                    
                     case MessageType.Success:
                         _answerRecieved = true;
-                        _chatIo.Write(ChatConstants.ConnectionEstablished);
-                        _client.ChangeStrategy(Container.LiveConnectionSt);
                         break;
+                    
                     case MessageType.RecoveryMessage:
-                        foreach (var message  in _messageService.ResoreHistory())
+                        _answerRecieved = true;
+                        _otherClientNameRecieved = true;
+                        _client.FriendName = recieved.Content;
+                        _chatIo.Write(ChatConstants.OtherUserStillOnLine);
+                        foreach (var m  in _messageService.ResoreHistory())
                         {
-                            _chatIo.Write(message);
+                            _chatIo.Write(m);
                         }
                         break;
+                    
                     case  MessageType.Error:
                         Message greetMessage=new Message { Type = MessageType.FirstMessage,Content =_client.Name};
                         _connectivityService.Send(greetMessage.ToJson().ToByteArray());

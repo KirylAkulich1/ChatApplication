@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Text;
 using ChatApplication.ConnectivityService;
 using ChatApplication.Handlers;
@@ -25,9 +24,10 @@ namespace ChatApplication.ConnectionStratagies
         public void Process(string content)
         {
             _client.Name = content;
-            _messageService.SaveMessage(_client.Name,content);
+            _messageService.SaveMessage(ChatConstants.Me,content);
             Message greetMessage = new Message { Type = MessageType.Chat,Content = content};
             _connectivityService.Send(greetMessage.ToJson().ToByteArray());
+            _chatIo.GetNextMessage();
         }
 
         public void StarategyEstablished()
@@ -49,7 +49,7 @@ namespace ChatApplication.ConnectionStratagies
                 switch (recieved.Type)
                 {
                     case MessageType.Chat:
-                        if (recieved.Content.MD5Hash() == recieved.ContentHash)
+                        if (recieved.Content.MD5Hash() != recieved.ContentHash)
                         {
                             Message errorMessage = new Message {Type = MessageType.Error, Content = "Hash error"};
                             _connectivityService.Send(errorMessage.ToJson().ToByteArray());
@@ -63,7 +63,7 @@ namespace ChatApplication.ConnectionStratagies
                         break;
                     
                     case MessageType.FirstMessage:
-                        Message recoverMessage = new Message {Type = MessageType.RecoveryMessage, Content = "Recover"};
+                        Message recoverMessage = new Message {Type = MessageType.RecoveryMessage, Content = _client.Name};
                         _connectivityService.Send(recoverMessage.ToJson().ToByteArray());
                         _chatIo.Write(ChatConstants.FriendReturned);
                         break;
